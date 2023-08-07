@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <!-- bootstrap - css  -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <!-- bootstrap - js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+    <!-- bootstrap_icon - css -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
+
+</head>
+<body>
+    
+    <header class="p-3 text-bg-dark">
+        <div class="container">
+          <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
+            
+            <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
+              <li><a href="#" class="nav-link px-2 text-white">Home</a></li>
+              <li><a href="./list.html" class="nav-link px-2 text-white">Board</a></li>
+              <li><a href="#" class="nav-link px-2 text-white">About</a></li>
+            </ul>
+    
+            <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" role="search">
+              <input type="search" class="form-control form-control-dark text-bg-dark" placeholder="Search..." aria-label="Search">
+            </form>
+    
+            <div class="text-end">
+              <button type="button" class="btn btn-outline-light me-2">Login</button>
+              <button type="button" class="btn btn-warning">Sign-up</button>
+            </div>
+          </div>
+        </div>
+      </header>
+      <div class="container mt-5 py-y">
+        <h1 class="text-center py-5">게시글 목록</h1>
+        <div class="d-flex justify-content-end py-3">
+            <div class="item">
+                <a href="insert.html" class="btn btn-primary">글쓰기</a>
+            </div>
+        </div>
+        
+        <table class="table table-dark table-striped table-hover shadow text-center" id="board-list">
+            <thead>
+                <tr class="" id="board-title">
+                    <th>번호</th>
+                    <th>제목</th>
+                    <th>작성자</th>
+                    <th>등록일자</th>
+                    <th>수정일자</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr id="empty">
+                    <td colspan="5">조회된 데이터가 없습니다.</td>
+                </tr>
+            </tbody>
+        </table>
+
+      </div> 
+
+      <script>
+        getList()
+
+        
+
+        // 게시글 데이터 요청 - fetch
+        async function getListData() {
+            let url = "http://192.168.0.200:8080/api/board"
+            let option = {
+                method: 'GET',
+                Headers: {
+                    'Content-Type' : 'application/json'
+                }
+            }
+
+            let response = await fetch(url, option)
+            
+            if( response.ok )
+                return response.json()
+            else
+                return null
+        }
+
+        function getList() {
+            getListData().then( (data) => {
+                console.log(data);
+                let boardList = data
+
+                // 데이터가 없으면
+                if( boardList.length == 0 )
+                        return
+
+                    // 데이터가 있으면
+                    // 데이터 비우기
+                    let boardTitle = document.getElementById('board-title')
+                        // document.getElementById('board-list').innerHTML = ''            // 목록 비우기
+                        document.getElementById('board-list').thead = boardTitle   // 제목 속성만 추가
+
+                    // 게시글 목록 추가하기
+                    let $boardList = document.getElementById('board-list')              // <table>
+                    let tbody = ''
+                    for (const board of boardList) {
+                        let tr =`<tr>
+                            <td width="50">${board.boardNo}</td>
+                            <td width="300">
+                                <a href="read.html?boardNo=${board.boardNo}" class="text-decoration-none text-white">${board.title}</a>
+                            </td>
+                            <td width="100">${board.writer}</td>
+                            <td width="200">${board.regDate}</td>
+                            <td width="200">${board.updDate}</td>
+                        </tr>
+                        `
+                        tbody += tr
+                    }
+                    // $boardList.children[1] : tbody
+                    $boardList.children[1].innerHTML = tbody
+                    
+            })
+        }
+
+        // 게시글 데이터 요청
+        /* 
+        function getList() {
+            let request = new XMLHttpRequest()
+
+            request.onreadystatechange = function () {
+                
+                // 응답 성공
+                if( request.readyState == request.DONE && request.status == 200) {
+                    // 응답 데이터
+                    let response = request.responseText
+
+                    let boardList = JSON.parse(response)
+
+                    // 데이터가 없으면
+                    if( boardList.length == 0 )
+                        return
+
+                    // 데이터가 있으면
+                    // 데이터 비우기
+                    let boardTitle = document.getElementById('board-title')
+                        document.getElementById('board-list').innerHTML = ''            // 목록 비우기
+                        document.getElementById('board-list').appendChild(boardTitle)   // 제목 속성만 추가
+
+                    // 게시글 목록 추가하기
+                    let $boardList = document.getElementById('board-list')              // <table>
+                    for (const board of boardList) {
+                        let tr =`<tr>
+                            <td width="50">${board.boardNo}</td>
+                            <td width="300">
+                                <a href="read.html" class="text-decoration-none text-white">${board.title}</a>
+                            </td>
+                            <td width="100">${board.writer}</td>
+                            <td width="200">${board.regDate}</td>
+                            <td width="200">${board.updDate}</td>
+                        </tr>
+                        `
+                        $boardList.innerHTML += tr
+                    }
+
+
+                    console.log('응답 데이터 : ');
+                    console.log(request);
+                }
+            }
+
+            let url = "http://192.168.0.200:8080/api/board"
+            request.open('GET', url, true)
+            request.setRequestHeader("Content-Type", "application/json")
+            request.send()
+
+        } */
+      </script>
+</body>
+</html>
